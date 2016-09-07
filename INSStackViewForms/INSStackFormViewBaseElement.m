@@ -90,13 +90,13 @@
     if (_selectedBackgroundView != selectedBackgroundView) {
         [_selectedBackgroundView removeFromSuperview];
         _selectedBackgroundView = selectedBackgroundView;
-        
+
         if (_selectedBackgroundView) {
             _selectedBackgroundView.alpha = 0.0;
             _selectedBackgroundView.translatesAutoresizingMaskIntoConstraints = NO;
             [self addSubview:_selectedBackgroundView];
             [self sendSubviewToBack:_selectedBackgroundView];
-            
+
             [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[_selectedBackgroundView]|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(_selectedBackgroundView)]];
             [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_selectedBackgroundView]|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(_selectedBackgroundView)]];
         }
@@ -107,7 +107,18 @@
     _accesoryType = accesoryType;
     if (_accesoryType == INSStackFormViewBaseElementAccessoryDisclosureIndicator) {
         UIImageView *disclousureIndicator = [[UIImageView alloc] initWithFrame:(CGRect){.size = CGSizeMake(8, 14)}];
-        disclousureIndicator.image = [UIImage imageNamed:@"forwardarrow" inBundle:[[self class] resourcesBundle] compatibleWithTraitCollection:nil];
+        UIImage *image = nil;
+
+        if ([UIImage instancesRespondToSelector:@selector(imageNamed:inBundle:compatibleWithTraitCollection:)]) {
+            image = [UIImage imageNamed:@"forwardarrow" inBundle:[[self class] resourcesBundle] compatibleWithTraitCollection:nil];
+        }
+        else {
+
+            image = [UIImage imageNamed:@"forwardarrow"];
+        }
+
+        disclousureIndicator.image = image;
+
         self.accessoryView = disclousureIndicator;
         if (!self.selectedBackgroundView) {
             self.selectedBackgroundView = [[UIView alloc] initWithFrame:CGRectZero];
@@ -126,21 +137,21 @@
         if (_accessoryView) {
             [self.accessoryContentView addSubview:_accessoryView];
             _accessoryView.translatesAutoresizingMaskIntoConstraints = NO;
-            
+
             [self.accessoryContentView addConstraint:[NSLayoutConstraint constraintWithItem:_accessoryView
                                                                                   attribute:NSLayoutAttributeCenterX
                                                                                   relatedBy:NSLayoutRelationEqual
                                                                                      toItem:self.accessoryContentView
                                                                                   attribute:NSLayoutAttributeCenterX
                                                                                  multiplier:1.f constant:0.f]];
-            
+
             [self.accessoryContentView addConstraint:[NSLayoutConstraint constraintWithItem:_accessoryView
                                                                                   attribute:NSLayoutAttributeCenterY
                                                                                   relatedBy:NSLayoutRelationEqual
                                                                                      toItem:self.accessoryContentView
                                                                                   attribute:NSLayoutAttributeCenterY
                                                                                  multiplier:1.f constant:0.f]];
-            
+
             [_accessoryView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:[_accessoryView(height)]" options:0 metrics:@{@"height":@(_accessoryView.frame.size.height)} views:NSDictionaryOfVariableBindings(_accessoryView)]];
             [_accessoryView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:[_accessoryView(width)]" options:0 metrics:@{@"width":@(_accessoryView.frame.size.width)} views:NSDictionaryOfVariableBindings(_accessoryView)]];
         }
@@ -219,8 +230,10 @@
 }
 
 - (void)layoutSubviews {
-    [super layoutSubviews];
+
     [self updateDelimitersFrame];
+    [super layoutSubviews];
+
 }
 
 - (void)updateDelimitersFrame {
@@ -228,7 +241,7 @@
     self.bottomDelimiter.frame = (CGRect){.origin = CGPointMake(self.bottomDelimiterInset.left, self.bounds.size.height-_delimiterLineHeight), .size = CGSizeMake(self.bounds.size.width - self.bottomDelimiterInset.left - self.bottomDelimiterInset.right, _delimiterLineHeight)};
     self.rightDelimiter.frame = (CGRect){ .origin = CGPointMake(self.bounds.size.width-_delimiterLineHeight, 0), .size = CGSizeMake(_delimiterLineHeight, self.bounds.size.height)};
     self.leftDelimiter.frame = (CGRect){  .size = CGSizeMake(_delimiterLineHeight, self.bounds.size.height)};
-    
+
     [self bringSubviewToFront:_topDelimiter];
     [self bringSubviewToFront:_bottomDelimiter];
     [self bringSubviewToFront:_leftDelimiter];
@@ -237,69 +250,69 @@
 
 - (void)setupDefaultValues {
     _delimiterLineHeight = 0.5;
-    
+
     _contentView = [[INSStackViewFormTransparentView alloc] initWithFrame:CGRectZero];
     _contentView.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:_contentView];
-    
+
     _accessoryContentView = [[INSStackViewFormTransparentView alloc] initWithFrame:CGRectZero];
     _accessoryContentView.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:_accessoryContentView];
-    
+
     [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_contentView]-0-[_accessoryContentView]|"
                                                                 options:0
                                                                 metrics:nil
                                                                   views:NSDictionaryOfVariableBindings(_contentView, _accessoryContentView)]];
-    
+
     [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[_contentView]|"
                                             options:0
                                             metrics:nil
                                               views:NSDictionaryOfVariableBindings(_contentView)]];
-    
+
     [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[_accessoryContentView]|"
                                             options:0
                                             metrics:nil
                                               views:NSDictionaryOfVariableBindings(_accessoryContentView)]];
-    
-    
+
+
     self.accessoryContentViewWidthConstraint = [[NSLayoutConstraint constraintsWithVisualFormat:@"H:[_accessoryContentView(0)]"
                                                                                        options:0
                                                                                        metrics:nil
                                                                                           views:NSDictionaryOfVariableBindings(_accessoryContentView)] firstObject];
     [self.accessoryContentView addConstraint:self.accessoryContentViewWidthConstraint];
-    
+
     _topDelimiter = [[UIView alloc] initWithFrame:(CGRect){.origin = CGPointMake(self.topDelimiterInset.left, 0), .size = CGSizeMake(self.bounds.size.width - self.topDelimiterInset.left - self.topDelimiterInset.right, _delimiterLineHeight)}];
     _topDelimiter.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleWidth;
     _topDelimiter.translatesAutoresizingMaskIntoConstraints = YES;
     _topDelimiter.backgroundColor = self.topDelimiterColor;
-    
+
     [self addSubview:_topDelimiter];
     [self bringSubviewToFront:_topDelimiter];
-    
+
     _bottomDelimiter = [[UIView alloc] initWithFrame:(CGRect){.origin = CGPointMake(self.bottomDelimiterInset.left, self.bounds.size.height-_delimiterLineHeight), .size = CGSizeMake(self.bounds.size.width - self.bottomDelimiterInset.left - self.bottomDelimiterInset.right, _delimiterLineHeight)}];
     _bottomDelimiter.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleWidth;
     _bottomDelimiter.translatesAutoresizingMaskIntoConstraints = YES;
     _bottomDelimiter.backgroundColor = self.bottomDelimiterColor;
-    
+
     [self addSubview:_bottomDelimiter];
     [self bringSubviewToFront:_bottomDelimiter];
-    
+
     _leftDelimiter = [[UIView alloc] initWithFrame:(CGRect){  .size = CGSizeMake(_delimiterLineHeight, self.bounds.size.height)}];
     _leftDelimiter.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleHeight;
     _leftDelimiter.translatesAutoresizingMaskIntoConstraints = YES;
     _leftDelimiter.backgroundColor = self.leftDelimiterColor;
-    
+
     [self addSubview:_leftDelimiter];
     [self bringSubviewToFront:_leftDelimiter];
-    
+
     _rightDelimiter = [[UIView alloc] initWithFrame:(CGRect){ .origin = CGPointMake(self.bounds.size.width-_delimiterLineHeight, 0), .size = CGSizeMake(_delimiterLineHeight, self.bounds.size.height)}];
     _rightDelimiter.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleHeight;
     _rightDelimiter.translatesAutoresizingMaskIntoConstraints = YES;
     _rightDelimiter.backgroundColor = self.rightDelimiterColor;
-    
+
     [self addSubview:_rightDelimiter];
     [self bringSubviewToFront:_rightDelimiter];
-    
+
     self.leftDelimiter.hidden = self.rightDelimiter.hidden = self.topDelimiter.hidden = self.bottomDelimiter.hidden = YES;
 }
 
@@ -331,14 +344,14 @@
 
 - (void)configure {
     self.clipsToBounds = YES;
-    
+
     if (self.item.userInteractionEnabled) {
         [self removeTarget:self action:@selector(userDidSelectView:) forControlEvents:UIControlEventTouchUpInside];
         [self addTarget:self action:@selector(userDidSelectView:) forControlEvents:UIControlEventTouchUpInside];
-        
+
         [self addTarget:self action:@selector(controlTouchDownInside:) forControlEvents:UIControlEventTouchDown];
     }
-    
+
     if (self.item.actionBlock) {
         self.accesoryType = INSStackFormViewBaseElementAccessoryDisclosureIndicator;
     }
@@ -361,7 +374,7 @@
             self.selectedBackgroundView.alpha = 0.0;
         }
     }
-    
+
 }
 - (void)setHighlighted:(BOOL)highlighted animated:(BOOL)animated {
     [super setHighlighted:highlighted];
@@ -384,7 +397,7 @@
 
 - (void)userDidSelectView:(INSStackFormViewBaseElement *)sender {
     [self setHighlighted:NO animated:YES];
-    
+
     if (self.item.actionBlock) {
         self.item.actionBlock(self);
     }
